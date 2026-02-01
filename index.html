@@ -1,0 +1,3017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI CHATBOT</title>
+    <link rel="icon" href="what-is-a-chatbot.webp">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.5.141/pdf.min.js"></script>
+
+    <style>
+        /* --- GLOBAL & THEME VARIABLES --- */
+:root {
+    --bg-color: #343541;
+    --sidebar-bg: #202123;
+    --chat-item-bg: #444654;
+    --text-color: #ececf1;
+    --input-bg: #40414f;
+    --border-color: #565869;
+    --accent-color: #10a37f;
+    --accent-hover: #1a7f64;
+    --accent-light: rgba(16, 163, 127, 0.1);
+    --user-color: #5c5c99;
+    --ai-color: #10a37f;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+    --danger-light: rgba(239, 68, 68, 0.1);
+    --warning-color: #f59e0b;
+    --warning-hover: #d97706;
+    --success-color: #10a37f;
+    --info-color: #3b82f6;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}
+
+body.light-mode {
+    --bg-color: #ffffff;
+    --sidebar-bg: #f7f7f8;
+    --chat-item-bg: #f7f7f8;
+    --text-color: #374151;
+    --input-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --accent-color: #8e44ad;
+    --accent-hover: #732d91;
+    --accent-light: rgba(142, 68, 173, 0.1);
+    --user-color: #6366f1;
+    --ai-color: #8e44ad;
+    --danger-color: #dc2626;
+    --danger-hover: #b91c1c;
+    --danger-light: rgba(220, 38, 38, 0.1);
+    --warning-color: #d97706;
+    --warning-hover: #b45309;
+    --success-color: #059669;
+    --info-color: #2563eb;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+body { 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    height: 100vh; 
+    overflow: hidden; 
+    transition: background-color var(--transition-slow), color var(--transition-slow);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* --- THREE.JS BACKGROUND --- */
+#container {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* --- LAYOUT GRID --- */
+#root {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+/* --- SIDEBAR (COMBINED) --- */
+.sidebar {
+    width: 280px;
+    background-color: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    transition: transform var(--transition-slow), width var(--transition-slow), padding var(--transition-slow);
+    z-index: 100;
+    border-right: 1px solid var(--border-color);
+    height: 100vh;
+    position: fixed;
+    color: var(--text-color);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.collapsed { 
+    width: 60px; 
+    padding: 12px 6px;
+}
+
+.sidebar-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+.close-btn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast);
+}
+
+.close-btn:hover {
+    background-color: var(--chat-item-bg);
+}
+
+.sidebar-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    gap: 12px;
+}
+
+/* --- ENHANCED BUTTON STYLES --- */
+.new-chat-btn {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 15px;
+    font-weight: 500;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.new-chat-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.new-chat-btn:hover {
+    background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.new-chat-btn:hover::before {
+    left: 100%;
+}
+
+.new-chat-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar.collapsed .new-chat-btn { 
+    width: 48px; 
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.sidebar.collapsed .new-chat-btn .btn-label { 
+    display: none; 
+}
+
+.minimize-btn {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.minimize-btn:hover {
+    background-color: var(--chat-item-bg);
+    border-color: var(--accent-color);
+    transform: rotate(90deg);
+}
+
+.history-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 20px;
+}
+
+/* History Item (Enhanced) */
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background-color: transparent;
+    gap: 8px;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--accent-color);
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.history-item.active { 
+    background-color: var(--accent-light);
+    border-color: var(--accent-color);
+}
+
+.history-item.active::before {
+    opacity: 1;
+}
+
+.history-item:hover { 
+    background-color: var(--chat-item-bg);
+    transform: translateX(2px);
+}
+
+.history-item:hover::before {
+    opacity: 0.5;
+}
+
+.history-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-grow: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.item-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: var(--accent-color);
+}
+
+.item-title {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.item-date {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.sidebar.collapsed .history-item .item-title,
+.sidebar.collapsed .history-item .item-date,
+.sidebar.collapsed .history-item .history-item-actions {
+    display: none;
+}
+
+.history-item-actions {
+    display: none;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.history-item:hover .history-item-actions {
+    display: flex;
+}
+
+/* Enhanced Button Styles for Share, Import, Clear */
+.history-item-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.history-item-btn:hover {
+    background-color: var(--chat-item-bg);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.history-item-btn.share-btn:hover {
+    color: var(--info-color);
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.history-item-btn.import-btn:hover {
+    color: var(--success-color);
+    background-color: var(--accent-light);
+}
+
+.history-item-btn.clear-btn:hover {
+    color: var(--danger-color);
+    background-color: var(--danger-light);
+}
+
+.sidebar-footer {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-btn:hover {
+    background-color: var(--chat-item-bg);
+    transform: translateX(4px);
+}
+
+.sidebar-btn::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 5px solid var(--accent-color);
+    opacity: 0;
+    transition: opacity var(--transition-base), right var(--transition-base);
+}
+
+.sidebar-btn:hover::after {
+    opacity: 1;
+    right: 12px;
+}
+
+.sidebar-btn.danger { 
+    color: var(--danger-color);
+}
+
+.sidebar-btn.danger:hover {
+    background-color: var(--danger-light);
+}
+
+.sidebar-btn.warning { 
+    color: var(--warning-color);
+}
+
+.sidebar-btn.warning:hover {
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+.sidebar-btn.success { 
+    color: var(--success-color);
+}
+
+.sidebar-btn.success:hover {
+    background-color: var(--accent-light);
+}
+
+.sidebar.collapsed .sidebar-btn .btn-label { 
+    display: none; 
+}
+
+.sidebar.collapsed .sidebar-btn {
+    justify-content: center;
+    padding: 10px;
+}
+
+.dev-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    border: none;
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+}
+
+.dev-button:hover { 
+    background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.sidebar.collapsed .dev-label { 
+    display: none; 
+}
+
+.sidebar.collapsed .dev-button {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+}
+
+/* --- MAIN CHAT AREA --- */
+.main-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 0;
+    margin-left: 0;
+    background: var(--bg-color);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--bg-color), 0.9);
+}
+
+.header-left, .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.chat-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-title i {
+    color: var(--accent-color);
+}
+
+.mobile-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    display: none;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast);
+}
+
+.mobile-menu-btn:hover {
+    background-color: var(--chat-item-bg);
+}
+
+/* Enhanced Icon Button */
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.icon-btn:hover { 
+    background-color: var(--chat-item-bg);
+    transform: translateY(-2px);
+}
+
+.icon-btn:active {
+    transform: translateY(0);
+}
+
+.icon-btn.tooltip::before {
+    content: attr(title);
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--sidebar-bg);
+    color: var(--text-color);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast);
+    z-index: 1000;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.icon-btn.tooltip:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+.stop-btn { 
+    color: var(--danger-color);
+}
+
+.stop-btn:hover { 
+    background-color: var(--danger-light);
+}
+
+.share-btn { 
+    color: var(--info-color);
+}
+
+.share-btn:hover { 
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.import-btn { 
+    color: var(--success-color);
+}
+
+.import-btn:hover { 
+    background-color: var(--accent-light);
+}
+
+.clear-btn { 
+    color: var(--warning-color);
+}
+
+.clear-btn:hover { 
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* --- Chat Messages Container --- */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+    min-width: 0;
+    padding-bottom: 140px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 20px;
+}
+
+/* --- Enhanced Message Styles --- */
+.message {
+    display: flex;
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+    animation: fadeIn 0.3s ease-out;
+    transition: background-color var(--transition-base);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.ai { 
+    background-color: var(--chat-item-bg);
+}
+
+.message.user { 
+    background-color: var(--bg-color);
+}
+
+.message:hover {
+    background-color: rgba(var(--chat-item-bg), 0.8);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--user-color), #6c6cb8);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.message.ai .avatar { 
+    background: linear-gradient(135deg, var(--ai-color), var(--accent-hover));
+}
+
+.message-content {
+    line-height: 1.6;
+    flex-grow: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    max-width: 800px;
+}
+
+.message-content p { 
+    margin-bottom: 12px; 
+    font-size: 15px;
+}
+
+.message-content code {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid var(--border-color);
+}
+
+.message-content pre {
+    background-color: var(--sidebar-bg);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin: 16px 0;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.message-content pre code {
+    padding: 0;
+    font-size: 14px;
+    background-color: transparent;
+    line-height: 1.4;
+    border: none;
+}
+
+.message-content h1, 
+.message-content h2, 
+.message-content h3 {
+    margin: 20px 0 10px 0;
+    color: var(--accent-color);
+}
+
+.message-content ul, 
+.message-content ol {
+    margin-left: 20px;
+    margin-bottom: 12px;
+}
+
+.message-content li {
+    margin-bottom: 6px;
+}
+
+.message-content blockquote {
+    border-left: 3px solid var(--accent-color);
+    padding-left: 16px;
+    margin: 16px 0;
+    font-style: italic;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 24px;
+    padding: 8px 0;
+}
+
+.typing-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    from { 
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    to { 
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+.msg-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.message:hover .msg-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+}
+
+.action-btn:hover { 
+    background-color: var(--input-bg);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px;
+    justify-content: center;
+    margin: 20px auto;
+    max-width: 800px;
+}
+
+.suggestion-chip {
+    padding: 12px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    background-color: var(--chat-item-bg);
+    transition: all var(--transition-base);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-color);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+}
+
+.suggestion-chip:hover {
+    background-color: var(--input-bg);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--accent-color);
+}
+
+.suggestion-chip:active {
+    transform: translateY(0);
+}
+
+/* --- ENHANCED INPUT AREA --- */
+.input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 24px 24px 16px 24px;
+    background: linear-gradient(180deg, rgba(var(--bg-color), 0) 0%, rgba(var(--bg-color), 0.8) 20%, rgba(var(--bg-color), 0.95) 40%, var(--bg-color) 100%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--border-color);
+}
+
+.input-wrapper {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--input-bg);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    box-shadow: var(--shadow-lg);
+    transition: border-color var(--transition-base);
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    resize: none;
+    height: 24px;
+    max-height: 200px;
+    outline: none;
+    padding: 0;
+    font-size: 15px;
+    line-height: 24px;
+    min-width: 0;
+    font-family: inherit;
+}
+
+textarea::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+.input-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-actions .icon-btn {
+    padding: 8px;
+    border-radius: var(--radius-md);
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: all var(--transition-fast);
+    width: 36px;
+    height: 36px;
+}
+
+.input-actions .icon-btn:hover {
+    background-color: var(--chat-item-bg);
+    opacity: 1;
+    color: var(--accent-color);
+}
+
+.send-btn {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)) !important;
+    color: white !important;
+    opacity: 0.9;
+    transition: all var(--transition-base) !important;
+}
+
+.send-btn:not([disabled]):hover {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(16, 163, 127, 0.4);
+}
+
+.send-btn[disabled] {
+    cursor: not-allowed;
+    opacity: 0.3;
+    transform: none !important;
+}
+
+.recording { 
+    color: var(--danger-color) !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* --- Enhanced Settings Modal --- */
+.settings-modal {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-slow);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+}
+
+.settings-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-content {
+    background-color: var(--bg-color);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 600px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.settings-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-group {
+    margin-bottom: 24px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background-color: var(--sidebar-bg);
+    transition: border-color var(--transition-base);
+}
+
+.settings-group:hover {
+    border-color: var(--accent-color);
+}
+
+.settings-group h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--border-color);
+    transition: background-color var(--transition-fast);
+    border-radius: var(--radius-sm);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.settings-row:hover {
+    background-color: var(--chat-item-bg);
+}
+
+.settings-row:last-child {
+    border-bottom: none;
+}
+
+.settings-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.settings-row input[type="range"] {
+    width: 140px;
+    height: 6px;
+    -webkit-appearance: none;
+    background: linear-gradient(to right, var(--border-color), var(--accent-color));
+    border-radius: 10px;
+    outline: none;
+}
+
+.settings-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+}
+
+.settings-row input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.settings-row select {
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 140px;
+    transition: border-color var(--transition-base);
+}
+
+.settings-row select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.settings-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+.range-value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--accent-color);
+    background: var(--accent-light);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+.settings-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-btn.primary {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: white;
+}
+
+.modal-btn.secondary {
+    background-color: var(--chat-item-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* --- Enhanced Toast Notification --- */
+.toast {
+    visibility: hidden;
+    min-width: 300px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-color);
+    text-align: center;
+    border-radius: var(--radius-lg);
+    padding: 18px 24px;
+    position: fixed;
+    z-index: 1000;
+    right: 30px;
+    bottom: 30px;
+    font-size: 15px;
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+}
+
+.toast.success {
+    border-left-color: var(--success-color);
+}
+
+.toast.error {
+    border-left-color: var(--danger-color);
+}
+
+.toast.warning {
+    border-left-color: var(--warning-color);
+}
+
+.toast.info {
+    border-left-color: var(--info-color);
+}
+
+.toast.show {
+    visibility: visible;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to { 
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.toast.success .toast-icon {
+    color: var(--success-color);
+}
+
+.toast.error .toast-icon {
+    color: var(--danger-color);
+}
+
+.toast.warning .toast-icon {
+    color: var(--warning-color);
+}
+
+.toast.info .toast-icon {
+    color: var(--info-color);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+        width: 280px;
+    }
+    
+    .sidebar.open { 
+        transform: translateX(0); 
+    }
+    
+    .sidebar.collapsed:not(.open) {
+        transform: translateX(-100%); 
+        width: 60px;
+    }
+    
+    .sidebar.open.collapsed {
+        width: 60px;
+        transform: translateX(0);
+    }
+    
+    .mobile-menu-btn { 
+        display: block; 
+    }
+    
+    .message { 
+        padding: 16px; 
+        gap: 12px;
+    }
+    
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .input-area {
+        padding: 16px 12px 8px 12px;
+    }
+    
+    .input-wrapper {
+        padding: 12px 16px;
+    }
+    
+    .header { 
+        padding: 12px 16px; 
+    }
+    
+    .chat-container {
+        padding-bottom: 120px;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+        font-size: 16px;
+    }
+    
+    .suggestion-chips {
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .suggestion-chip {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .settings-content {
+        width: 95%;
+        padding: 16px;
+    }
+    
+    .toast {
+        min-width: calc(100% - 40px);
+        right: 20px;
+        left: 20px;
+    }
+}
+
+/* --- Desktop Layout --- */
+@media (min-width: 769px) {
+    .sidebar {
+        position: relative;
+        transform: translateX(0) !important;
+    }
+    
+    .main-chat {
+        margin-left: 280px;
+        transition: margin-left var(--transition-slow) ease;
+    }
+    
+    .sidebar.collapsed + .main-chat {
+        margin-left: 60px;
+    }
+    
+    .mobile-menu-btn {
+        display: none !important;
+    }
+}
+
+/* --- Utility Classes --- */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.flex-end {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+
+.mt-sm { margin-top: 8px; }
+.mt-md { margin-top: 16px; }
+.mt-lg { margin-top: 24px; }
+
+.mb-sm { margin-bottom: 8px; }
+.mb-md { margin-bottom: 16px; }
+.mb-lg { margin-bottom: 24px; }
+
+.text-sm { font-size: 12px; }
+.text-md { font-size: 14px; }
+.text-lg { font-size: 16px; }
+.text-xl { font-size: 18px; }
+
+.text-light { opacity: 0.7; }
+.text-bold { font-weight: 600; }
+.text-accent { color: var(--accent-color); }
+.text-danger { color: var(--danger-color); }
+.text-warning { color: var(--warning-color); }
+.text-success { color: var(--success-color); }
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: var(--accent-light);
+    color: var(--accent-color);
+    border: 1px solid rgba(var(--accent-color), 0.2);
+}
+
+.pill.danger {
+    background-color: var(--danger-light);
+    color: var(--danger-color);
+    border-color: rgba(var(--danger-color), 0.2);
+}
+
+.pill.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* --- Loading Animation --- */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Empty State --- */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.empty-state-description {
+    font-size: 14px;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+/* --- Focus States for Accessibility --- */
+*:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* --- Print Styles --- */
+@media print {
+    .sidebar,
+    .header-actions,
+    .input-area,
+    .msg-actions {
+        display: none !important;
+    }
+    
+    .main-chat {
+        margin-left: 0 !important;
+    }
+    
+    .message {
+        break-inside: avoid;
+        border: none !important;
+        padding: 10px !important;
+    }
+    
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+}
+/* === Sidebar Footer Action Buttons (Share / Import / Clear) === */
+.sidebar-footer .sidebar-btn {
+    width: 100%;
+    background-color: var(--chat-item-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar-footer .sidebar-btn i {
+    font-size: 16px;
+}
+
+/* Share Button */
+.sidebar-footer .sidebar-btn.share {
+    color: var(--info-color);
+}
+
+.sidebar-footer .sidebar-btn.share:hover {
+    background-color: rgba(59, 130, 246, 0.12);
+    border-color: var(--info-color);
+}
+
+/* Import Button */
+.sidebar-footer .sidebar-btn.import {
+    color: var(--success-color);
+}
+
+.sidebar-footer .sidebar-btn.import:hover {
+    background-color: var(--accent-light);
+    border-color: var(--success-color);
+}
+
+/* Clear Button */
+.sidebar-footer .sidebar-btn.clear {
+    color: var(--danger-color);
+}
+
+.sidebar-footer .sidebar-btn.clear:hover {
+    background-color: var(--danger-light);
+    border-color: var(--danger-color);
+}
+
+/* Collapsed Sidebar Icons Center */
+.sidebar.collapsed .sidebar-footer .sidebar-btn {
+    justify-content: center;
+    padding: 12px;
+}
+.sidebar-btn.success {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: #fff;
+    border: none;
+}
+
+.sidebar-btn.success:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="root"></div>
+    <div class="toast" id="toast"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // Helper function for global toast notification
+        function showToast(msg, error = false, type = 'info') {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            
+            if (type === 'error' || error) {
+                toast.style.background = "var(--danger-color)";
+            } else if (type === 'warning') {
+                toast.style.background = "var(--warning-color)";
+            } else {
+                toast.style.background = "var(--accent-color)";
+            }
+            
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
+
+        // --- 1. Settings Modal Component ---
+        const SettingsModal = ({ isOpen, onClose, settings, onSettingsChange }) => {
+            if (!isOpen) return null;
+            return (
+                <div className={`settings-modal ${isOpen ? 'show' : ''}`} onClick={onClose}>
+                    <div className="settings-content" onClick={e => e.stopPropagation()}>
+                        <div className="settings-header">
+                            <h2>Settings</h2>
+                            <button className="icon-btn" onClick={onClose} title="Close">
+                                <i className="ph ph-x"></i>
+                            </button>
+                        </div>
+                        
+                        <div className="settings-group">
+                            <h3>Appearance</h3>
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-palette"></i>
+                                    <span>Theme</span>
+                                </div>
+                                <select 
+                                    value={settings.theme} 
+                                    onChange={(e) => onSettingsChange(prev => ({ ...prev, theme: e.target.value }))}
+                                >
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Mode</option>
+                                    <option value="auto">System</option>
+                                </select>
+                            </div>
+                            
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-font-family"></i>
+                                    <span>Font Size</span>
+                                </div>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                    <input 
+                                        type="range" 
+                                        min="12" 
+                                        max="18" 
+                                        value={settings.fontSize} 
+                                        onChange={(e) => onSettingsChange(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
+                                    />
+                                    <span className="range-value">{settings.fontSize}px</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="settings-group">
+                            <h3>Behavior</h3>
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-speaker-high"></i>
+                                    <span>Auto-Read Responses</span>
+                                </div>
+                                <input 
+                                    type="checkbox" 
+                                    checked={settings.autoRead} 
+                                    onChange={(e) => onSettingsChange(prev => ({ ...prev, autoRead: e.target.checked }))}
+                                />
+                            </div>
+                            
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-copy"></i>
+                                    <span>Auto-Copy Responses</span>
+                                </div>
+                                <input 
+                                    type="checkbox" 
+                                    checked={settings.autoCopy} 
+                                    onChange={(e) => onSettingsChange(prev => ({ ...prev, autoCopy: e.target.checked }))}
+                                />
+                            </div>
+                            
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-clock"></i>
+                                    <span>Response Speed</span>
+                                </div>
+                                <select 
+                                    value={settings.responseSpeed} 
+                                    onChange={(e) => onSettingsChange(prev => ({ ...prev, responseSpeed: e.target.value }))}
+                                >
+                                    <option value="fast">Fast</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="slow">Slow (Simulated)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div className="settings-group">
+                            <h3>AI Settings</h3>
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-brain"></i>
+                                    <span>AI Model</span>
+                                </div>
+                                <select 
+                                    value={settings.aiModel} 
+                                    onChange={(e) => onSettingsChange(prev => ({ ...prev, aiModel: e.target.value }))}
+                                >
+                                    <option value="gemini">Gemini Pro</option>
+                                    <option value="gpt">GPT-3.5</option>
+                                    <option value="claude">Claude</option>
+                                </select>
+                            </div>
+                            
+                            <div className="settings-row">
+                                <div className="settings-label">
+                                    <i className="ph ph-thermometer"></i>
+                                    <span>Creativity (Temperature)</span>
+                                </div>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max="1" 
+                                        step="0.1"
+                                        value={settings.creativity} 
+                                        onChange={(e) => onSettingsChange(prev => ({ ...prev, creativity: parseFloat(e.target.value) }))}
+                                    />
+                                    <span className="range-value">{settings.creativity.toFixed(1)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="settings-footer">
+                            <button className="modal-btn secondary" onClick={onClose}>
+                                Cancel
+                            </button>
+                            <button className="modal-btn primary" onClick={onClose}>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 2. Sidebar Component (FIXED) ---
+        const Sidebar = ({
+            history,
+            activeChatId,
+            onSelectChat,
+            onNewChat,
+            onDeleteChat,
+            onClearAllChats,
+            onRenameChat,
+            isOpen,
+            toggleSidebar,
+            onShareChats,
+            onImportChats,
+            isCollapsed,
+            setCollapsed
+        }) => {
+            const [renamingChatId, setRenamingChatId] = useState(null);
+            const [renameValue, setRenameValue] = useState('');
+            
+            // Mobile: close sidebar after selecting chat
+            const handleSelect = (id) => {
+                onSelectChat(id);
+                if (window.innerWidth < 768) toggleSidebar();
+            };
+            
+            // Handle rename
+            const handleRenameStart = (chat) => {
+                setRenamingChatId(chat.id);
+                setRenameValue(chat.title);
+            };
+            
+            const handleRenameSubmit = (chatId) => {
+                if (renameValue.trim()) {
+                    onRenameChat(chatId, renameValue);
+                }
+                setRenamingChatId(null);
+            };
+            
+            const handleRenameKeyDown = (e, chatId) => {
+                if (e.key === 'Enter') {
+                    handleRenameSubmit(chatId);
+                } else if (e.key === 'Escape') {
+                    setRenamingChatId(null);
+                }
+            };
+
+            // Don't render at all on mobile if closed
+            if (window.innerWidth < 768 && !isOpen) return null;
+
+            return (
+                <div className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}>
+                    {/* TOP SECTION */}
+                    <div className="sidebar-top">
+                        <button 
+                            className="icon-btn minimize-btn" 
+                            onClick={() => setCollapsed(!isCollapsed)}
+                            title={isCollapsed ? "Expand" : "Collapse"}
+                        >
+                            <i className={`ph ${isCollapsed ? 'ph-arrow-right' : 'ph-arrow-left'}`}></i>
+                        </button>
+                        
+                        {!isCollapsed && (
+                            <button className="new-chat-btn" onClick={onNewChat}>
+                                <i className="ph ph-plus"></i>
+                                <span className="btn-label">New Chat</span>
+                            </button>
+                        )}
+                        
+                        <button className="close-btn" onClick={toggleSidebar} title="Close">
+                            <i className="ph ph-x"></i>
+                        </button>
+                    </div>
+                    
+                    {/* CONTENT SECTION (only when not collapsed) */}
+                    {!isCollapsed && (
+                        <div className="sidebar-content">
+                            {/* HISTORY LIST */}
+                            <div className="history-list">
+                                <div style={{padding: '8px 12px', fontSize: '12px', opacity: 0.7, display: 'flex', justifyContent: 'space-between'}}>
+                                    <span>Recent Chats</span>
+                                    <span>{history.length}</span>
+                                </div>
+                                
+                                {history.length === 0 ? (
+                                    <div style={{textAlign: 'center', padding: '20px', opacity: 0.5}}>
+                                        <i className="ph ph-chats" style={{fontSize: '24px', marginBottom: '8px'}}></i>
+                                        <p>No chat history</p>
+                                    </div>
+                                ) : (
+                                    history.map(chat => (
+                                        <div 
+                                            key={chat.id} 
+                                            className={`history-item ${activeChatId === chat.id ? 'active' : ''}`}
+                                            onClick={() => handleSelect(chat.id)}
+                                        >
+                                            <div className="history-item-content">
+                                                <div className="item-icon">
+                                                    <i className="ph ph-chat-circle"></i>
+                                                </div>
+                                                <div style={{flex: 1, minWidth: 0}}>
+                                                    {renamingChatId === chat.id ? (
+                                                        <input
+                                                            type="text"
+                                                            value={renameValue}
+                                                            autoFocus
+                                                            onChange={(e) => setRenameValue(e.target.value)}
+                                                            onBlur={() => handleRenameSubmit(chat.id)}
+                                                            onKeyDown={(e) => handleRenameKeyDown(e, chat.id)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                color: 'var(--text-color)',
+                                                                width: '100%',
+                                                                outline: 'none',
+                                                                fontSize: '14px'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <>
+                                                            <div className="item-title">{chat.title}</div>
+                                                            <div className="item-date">
+                                                                {new Date(chat.createdAt).toLocaleDateString()}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {renamingChatId !== chat.id && (
+                                                <div className="history-item-actions">
+                                                    <button 
+                                                        className="history-item-btn" 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRenameStart(chat);
+                                                        }}
+                                                        title="Rename"
+                                                    >
+                                                        <i className="ph ph-pencil"></i>
+                                                    </button>
+                                                    <button 
+                                                        className="history-item-btn clear-btn" 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onDeleteChat(chat.id);
+                                                        }}
+                                                        title="Delete"
+                                                    >
+                                                        <i className="ph ph-trash"></i>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            
+                            {/* FOOTER ACTIONS */}
+                            <div className="sidebar-footer">
+                                <div className="sidebar-actions">
+                                    <button 
+                                        className="sidebar-btn share" 
+                                        onClick={onShareChats}
+                                    >
+                                        <i className="ph ph-share-network"></i>
+                                        <span className="btn-label">Share Chat</span>
+                                    </button>
+                                    <button 
+                                        className="sidebar-btn import" 
+                                        onClick={onImportChats}
+                                    >
+                                        <i className="ph ph-folder-open"></i>
+                                        <span className="btn-label">Import File</span>
+                                    </button>
+                                    <button 
+                                        className="sidebar-btn clear danger" 
+                                        onClick={onClearAllChats}
+                                    >
+                                        <i className="ph ph-trash"></i>
+                                        <span className="btn-label">Clear All</span>
+                                    </button>
+                                </div>
+                                
+                                {/* Developer Profile Button */}
+                                <a href="profile.html" className="sidebar-btn success">
+                                    <i className="ph ph-user"></i>
+                                    <span className="btn-label">About Developer</span>
+                                </a>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* MINIMAL VIEW WHEN COLLAPSED */}
+                    {isCollapsed && (
+                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '20px'}}>
+                            <button 
+                                className="icon-btn" 
+                                onClick={onNewChat}
+                                title="New Chat"
+                                style={{width: '48px', height: '48px'}}
+                            >
+                                <i className="ph ph-plus" style={{fontSize: '20px'}}></i>
+                            </button>
+                            {history.slice(0, 3).map(chat => (
+                                <button 
+                                    key={chat.id}
+                                    className={`icon-btn ${activeChatId === chat.id ? 'active' : ''}`}
+                                    onClick={() => handleSelect(chat.id)}
+                                    title={chat.title}
+                                    style={{width: '48px', height: '48px'}}
+                                >
+                                    <i className="ph ph-chat-circle"></i>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- 3. Chat Message Component ---
+        const ChatMessage = ({ msg, onRegenerate, onEdit, settings }) => {
+            const [isSpeaking, setIsSpeaking] = useState(false);
+            const contentRef = useRef(null);
+
+            const formatText = (text) => {
+                if (!text) return "";
+                
+                try {
+                    marked.setOptions({ breaks: true, gfm: true });
+                    const html = marked.parse(text);
+                    return html;
+                } catch (err) {
+                    console.error('Markdown parsing error:', err);
+                    return text.replace(/\n/g, '<br>');
+                }
+            };
+
+            const speak = useCallback((text) => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const cleanText = text.replace(/[#*`]/g, '').trim();
+                    if (!cleanText) return;
+                    const utterance = new SpeechSynthesisUtterance(cleanText);
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        const preferredVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Natural')) || voices.find(v => v.lang.includes('en'));
+                        if (preferredVoice) { utterance.voice = preferredVoice; }
+                    }
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    utterance.onstart = () => setIsSpeaking(true);
+                    utterance.onend = () => setIsSpeaking(false);
+                    utterance.onerror = () => setIsSpeaking(false);
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    showToast("Text-to-speech not supported in your browser", true, 'error');
+                }
+            }, []);
+
+            const stopSpeaking = useCallback(() => {
+                window.speechSynthesis.cancel();
+                setIsSpeaking(false);
+            }, []);
+
+            const copyToClipboard = async (text) => {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast('Copied to clipboard!');
+                } catch (err) {
+                    showToast('Failed to copy', true, 'error');
+                }
+            };
+
+            const handleRegenerate = useCallback(() => {
+                if (onRegenerate) {
+                    onRegenerate(msg.content);
+                }
+            }, [onRegenerate, msg.content]);
+
+            const handleEdit = useCallback(() => {
+                if (onEdit) {
+                    onEdit(msg.content);
+                }
+            }, [onEdit, msg.content]);
+
+            useEffect(() => {
+                if (contentRef.current) {
+                    const codeBlocks = contentRef.current.querySelectorAll('pre code');
+                    codeBlocks.forEach(block => {
+                        Prism.highlightElement(block);
+                    });
+                }
+            }, [msg.content]);
+
+            useEffect(() => {
+                if (msg.role === 'ai' && msg.content !== 'Thinking...' && settings.autoRead) {
+                    speak(msg.content);
+                }
+                return () => {
+                    if (window.speechSynthesis) {
+                         window.speechSynthesis.cancel();
+                    }
+                };
+            }, [msg.content, settings.autoRead, speak]);
+
+            return (
+                <div className={`message ${msg.role}`}>
+                    <div className="avatar">
+                        {msg.role === 'user' ? (
+                            <i className="ph ph-user"></i>
+                        ) : (
+                            <i className="ph ph-lightning"></i>
+                        )}
+                    </div>
+                    <div className="content-wrapper" style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+                        <div 
+                            ref={contentRef}
+                            className="message-content" 
+                            dangerouslySetInnerHTML={{ __html: formatText(msg.content) }}
+                            style={{ fontSize: `${settings.fontSize}px` }}
+                        />
+                        
+                        {msg.role === 'ai' && msg.content === 'Thinking...' ? (
+                            <div className="typing-indicator">
+                                <div className="typing-dot"></div>
+                                <div className="typing-dot"></div>
+                                <div className="typing-dot"></div>
+                            </div>
+                        ) : msg.role === 'ai' && (
+                            <div className="msg-actions">
+                                <button 
+                                    className="action-btn" 
+                                    onClick={() => copyToClipboard(msg.content)}
+                                    title="Copy to clipboard"
+                                >
+                                    <i className="ph ph-copy"></i> Copy
+                                </button>
+                                {isSpeaking ? (
+                                    <button 
+                                        className="action-btn" 
+                                        onClick={stopSpeaking}
+                                        title="Stop speaking"
+                                    >
+                                        <i className="ph ph-stop"></i> Stop
+                                    </button>
+                                ) : (
+                                    <button 
+                                        className="action-btn" 
+                                        onClick={() => speak(msg.content)}
+                                        title="Read aloud"
+                                    >
+                                        <i className="ph ph-speaker-high"></i> Speak
+                                    </button>
+                                )}
+                                <button 
+                                    className="action-btn" 
+                                    onClick={handleRegenerate}
+                                    title="Regenerate response"
+                                >
+                                    <i className="ph ph-arrow-clockwise"></i> Regenerate
+                                </button>
+                            </div>
+                        )}
+                        
+                        {msg.role === 'user' && (
+                            <div className="msg-actions">
+                                <button 
+                                    className="action-btn" 
+                                    onClick={handleEdit}
+                                    title="Edit message"
+                                >
+                                    <i className="ph ph-pencil"></i> Edit
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. Main App Component ---
+        const App = () => {
+            const [input, setInput] = useState('');
+            const [history, setHistory] = useState([]);
+            const [currentChatId, setCurrentChatId] = useState(null);
+            const [messages, setMessages] = useState([]);
+            const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+            const [isRecording, setIsRecording] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [settings, setSettings] = useState(() => {
+                const saved = localStorage.getItem('chatSettings');
+                return saved ? JSON.parse(saved) : {
+                    theme: 'dark',
+                    fontSize: 16,
+                    autoRead: false,
+                    autoCopy: false,
+                    responseSpeed: 'medium',
+                    aiModel: 'gemini',
+                    creativity: 0.7
+                };
+            });
+            const [showSettings, setShowSettings] = useState(false);
+            const [abortController, setAbortController] = useState(null);
+            const [isCollapsed, setIsCollapsed] = useState(false);
+
+            const chatContainerRef = useRef(null);
+            const inputRef = useRef(null);
+            
+            // Effect to manage desktop sidebar margin
+            useEffect(() => {
+                const mainChatElement = document.querySelector('.main-chat');
+                if (mainChatElement && window.innerWidth > 768) {
+                    mainChatElement.style.marginLeft = isCollapsed ? '60px' : '280px';
+                }
+            }, [isCollapsed, isSidebarOpen]);
+
+            // Auto-expanding textarea
+            useEffect(() => {
+                if (inputRef.current) {
+                    inputRef.current.style.height = '24px';
+                    inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
+                }
+            }, [input]);
+
+
+            // Initialize chat on load (New Chat or first from history)
+            useEffect(() => {
+                const savedHistory = localStorage.getItem('chatHistory');
+                
+                if (savedHistory) {
+                    try {
+                        const parsed = JSON.parse(savedHistory);
+                        setHistory(parsed);
+                        if (parsed.length > 0) {
+                            setCurrentChatId(parsed[0].id);
+                            setMessages(parsed[0].messages);
+                        } else {
+                            startNewChat(false);
+                        }
+                    } catch (err) {
+                        console.error('Failed to load history:', err);
+                        startNewChat(false);
+                    }
+                } else {
+                    startNewChat(false);
+                }
+                
+                const handleResize = () => {
+                    if (window.innerWidth > 768) {
+                        setIsSidebarOpen(true);
+                    }
+                };
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+
+            }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+            // Save to localStorage
+            useEffect(() => { localStorage.setItem('chatHistory', JSON.stringify(history)); }, [history]);
+            useEffect(() => { localStorage.setItem('chatSettings', JSON.stringify(settings)); }, [settings]);
+
+            // Theme effect
+            useEffect(() => {
+                if (settings.theme === 'auto') {
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.body.className = prefersDark ? '' : 'light-mode';
+                } else {
+                    document.body.className = settings.theme === 'light' ? 'light-mode' : '';
+                }
+            }, [settings.theme]);
+
+            // Auto-scroll
+            useEffect(() => {
+                if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                }
+            }, [messages]);
+            
+            // --- Chat Management Callbacks ---
+
+            const toggleTheme = useCallback(() => {
+                setSettings(prev => ({
+                    ...prev,
+                    theme: prev.theme === 'dark' ? 'light' : 'dark'
+                }));
+            }, []);
+
+            const toggleSidebar = useCallback(() => {
+                 setIsSidebarOpen(prev => !prev);
+            }, []);
+
+            const startNewChat = useCallback((showToastMessage = true) => {
+                const newId = Date.now();
+                const newChat = { 
+                    id: newId, 
+                    title: 'New Chat', 
+                    messages: [],
+                    createdAt: new Date().toISOString()
+                };
+                setMessages([]);
+                setCurrentChatId(newId);
+                setHistory(prev => [newChat, ...prev.filter(c => c.id !== newId)]);
+                if (inputRef.current) inputRef.current.focus();
+                if (showToastMessage) showToast('New chat started');
+            }, []);
+
+            const loadChat = useCallback((id) => {
+                const chat = history.find(c => c.id === id);
+                if (chat) {
+                    setCurrentChatId(id);
+                    setMessages(chat.messages);
+                }
+            }, [history]);
+
+            const deleteChat = useCallback((id) => {
+                setHistory(prev => {
+                    const filtered = prev.filter(chat => chat.id !== id);
+                    if (currentChatId === id) {
+                        if (filtered.length > 0) {
+                            const nextChatId = filtered[0].id;
+                            loadChat(nextChatId);
+                        } else {
+                            startNewChat();
+                        }
+                    }
+                    return filtered;
+                });
+                showToast('Chat deleted');
+            }, [currentChatId, loadChat, startNewChat]);
+
+            const clearAllChats = useCallback(() => {
+                if (window.confirm('Are you sure you want to clear all chats? This cannot be undone.')) {
+                    setHistory([]);
+                    startNewChat();
+                    localStorage.removeItem('chatHistory');
+                    showToast('All chats cleared');
+                }
+            }, [startNewChat]);
+
+            const renameChat = useCallback((id, newTitle) => {
+                setHistory(prev => 
+                    prev.map(chat => 
+                        chat.id === id ? { ...chat, title: newTitle || chat.title } : chat
+                    )
+                );
+                showToast('Chat renamed');
+            }, []);
+
+            const saveCurrentChatToHistory = (msgs, firstUserMsg) => {
+                setHistory(prev => {
+                    const existing = prev.find(c => c.id === currentChatId);
+                    const newTitle = firstUserMsg && firstUserMsg.length > 30 
+                        ? firstUserMsg.substring(0, 30) + '...' 
+                        : (firstUserMsg || 'New Chat');
+
+                    if (existing) {
+                        const updatedChat = { 
+                            ...existing, 
+                            messages: msgs,
+                            title: existing.title === 'New Chat' ? newTitle : existing.title,
+                            updatedAt: new Date().toISOString()
+                        };
+                        const filtered = prev.filter(c => c.id !== currentChatId);
+                        return [updatedChat, ...filtered];
+                    } else {
+                        return [{ 
+                            id: currentChatId, 
+                            title: newTitle, 
+                            messages: msgs,
+                            createdAt: new Date().toISOString()
+                        }, ...prev];
+                    }
+                });
+            };
+
+            const stopGeneration = useCallback(() => {
+                if (abortController) {
+                    abortController.abort();
+                    setIsLoading(false);
+                    setMessages(prev => prev.filter(msg => msg.content !== 'Thinking...'));
+                    if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                    }
+                    showToast('Generation stopped');
+                }
+            }, [abortController]);
+
+            // --- Simple simulator response (fallback when backend not available) ---
+            const getSimulatedResponse = (userText, errorMessage = "") => {
+                if (errorMessage.includes('Server responded with status 503') || errorMessage.includes('overloaded')) return "The backend is reporting that the AI model is temporarily overloaded or unavailable (Status 503/Overloaded). I'm running in simulated mode. Try again in a few moments.";
+                if (errorMessage.includes('Server responded with status 400')) return "The backend server received your request but returned an error (Status 400 - Bad Request). This often means an API key is missing or the request format is incorrect.";
+                if (/hello|hi/i.test(userText)) return "Hello! I am a simulated AI assistant. The backend server seems to be unreachable, so I am running in local mode. How can I help you today?";
+                if (/summary/i.test(userText)) return "As a simulator, I can't access live data, but here's a short simulated summary: The issue is a **backend connectivity failure**. Your front-end is working as designed by providing a fallback response.";
+                if (/error|bug|debug|code/i.test(userText)) return "```javascript\n// Simulated code fix\nfunction fixBackendError(bug) {\n    // The front-end is fine. The issue is your server (localhost:5000).\n    if (bug.includes('Failed to fetch')) {\n        return '1. Ensure your backend server is running.\\n2. Check your browser console for CORS errors.';\n    }\n    return 'Start your backend server process and check its console for errors.';\n}\n```";
+                return "Sorry, I couldn't reach the backend server. This is a simulated reply to keep the app responsive. My current response is: *I don't know the answer to that.*";
+            };
+
+
+            // --- THE CORE SEND LOGIC ---
+            const handleSend = useCallback(async (userText = input) => {
+                if (!userText.trim()) return;
+                
+                if (isLoading && abortController) {
+                    stopGeneration();
+                }
+
+                const userMsg = { role: 'user', content: userText };
+                const updatedMessages = [...messages, userMsg];
+                
+                setMessages(updatedMessages);
+                setInput('');
+                
+                if (inputRef.current) {
+                    setTimeout(() => {
+                        inputRef.current.style.height = '24px';
+                    }, 0);
+                }
+
+                setIsLoading(true);
+                
+                const currentChat = history.find(c => c.id === currentChatId);
+                const firstUserMsg = (currentChat && currentChat.title !== 'New Chat') 
+                    ? currentChat.title 
+                    : userText.substring(0, 30);
+
+                saveCurrentChatToHistory(updatedMessages, firstUserMsg);
+                setMessages(prev => [...prev.filter(msg => msg.content !== 'Thinking...'), { role: 'ai', content: 'Thinking...' }]);
+
+
+                try {
+                    const controller = new AbortController();
+                    setAbortController(controller);
+                    
+                    const response = await fetch("/generate", {
+                        method: "POST",
+                        headers: { 
+                            "Content-Type": "application/json",
+                            "X-AI-Model": settings.aiModel
+                        },
+                        body: JSON.stringify({ 
+                            prompt: userText,
+                            history: messages,
+                            temperature: settings.creativity,
+                            model: settings.aiModel
+                        }),
+                        signal: controller.signal
+                    });
+
+                    if (!response.ok) {
+                        const bodyText = await response.text();
+                        throw new Error(`Server responded with status ${response.status}: ${bodyText}`);
+                    }
+
+                    const data = await response.json();
+                    const aiText = data.response || data.response_text || data.answer || "No response received from server.";
+
+                    const aiMsg = { role: 'ai', content: aiText };
+                    const finalMessages = [...updatedMessages, aiMsg];
+                    
+                    setMessages(prev => [...prev.filter(msg => msg.content !== 'Thinking...'), aiMsg]);
+                    saveCurrentChatToHistory(finalMessages, firstUserMsg);
+
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        return;
+                    }
+                    
+                    // BACKEND FAILURE FALLBACK: This is the logic that executes when the server is unreachable
+                    console.error("Backend request failed:", err);
+                    showToast('Backend connection failed - Using Simulator', true, 'warning');
+                    
+                    // Wait to simulate thinking speed
+                    const speedFactor = settings.responseSpeed === 'fast' ? 500 : settings.responseSpeed === 'medium' ? 1200 : 2500;
+                    await new Promise(r => setTimeout(r, speedFactor));
+                    
+                    const aiText = getSimulatedResponse(userText, err.message);
+                    const aiMsg = { role: 'ai', content: aiText };
+                    const finalMessages = [...updatedMessages, aiMsg];
+
+                    setMessages(prev => [...prev.filter(msg => msg.content !== 'Thinking...'), aiMsg]);
+                    saveCurrentChatToHistory(finalMessages, firstUserMsg);
+                    
+                } finally {
+                    setIsLoading(false);
+                    setAbortController(null);
+                }
+            }, [input, isLoading, abortController, messages, history, currentChatId, settings.aiModel, settings.creativity, settings.responseSpeed, stopGeneration]); 
+
+            const handleMic = useCallback(() => {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    showToast("Speech API not supported", true, 'error');
+                    return;
+                }
+                const recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = () => setIsRecording(true);
+                recognition.onend = () => setIsRecording(false);
+                recognition.onerror = (event) => {
+                    setIsRecording(false);
+                    showToast("Speech recognition error: " + event.error, true, 'error');
+                };
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    setInput(prev => prev + (prev ? ' ' : '') + transcript);
+                    showToast("Voice input captured");
+                };
+                recognition.start();
+            }, []);
+
+            const handleRegenerate = useCallback(() => {
+                const lastUserIndex = messages.map((msg, idx) => msg.role === 'user' ? idx : -1)
+                    .filter(idx => idx !== -1)
+                    .pop();
+                
+                if (lastUserIndex !== undefined) {
+                    const lastUserMessage = messages[lastUserIndex].content;
+                    const messagesBefore = messages.slice(0, lastUserIndex);
+                    setMessages(messagesBefore);
+                    handleSend(lastUserMessage);
+                }
+            }, [messages, handleSend]);
+
+            const handleEditMessage = useCallback((content) => {
+                setInput(content);
+                inputRef.current.focus();
+                const messageIndex = messages.findIndex(msg => msg.content === content && msg.role === 'user');
+                if (messageIndex !== -1) {
+                    setMessages(messages.slice(0, messageIndex));
+                }
+            }, [messages]);
+
+            // --- Enhanced Import File for Analysis (Supports Multiple File Types) ---
+            const importFileAndAnalyze = useCallback(() => {
+                const inputEl = document.createElement('input');
+                inputEl.type = 'file';
+                inputEl.accept = '.pdf,.txt,.md,.json,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.html,.css,.js,.py,.java,.cpp,.c,.cs,.php,.rb,.go,.rs,.swift,.kt,.ts,.sql,.xml,.csv,.zip,.rar,.tar,.gz';
+                inputEl.multiple = false; // Single file selection
+                
+                inputEl.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    // Max file size 10MB (increased from 5MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast('File is too large (max 10MB)', true, 'error');
+                        return;
+                    }
+
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    let fileInfo = '';
+                    let analysisPrompt = '';
+                    let displayContent = '';
+
+                    try {
+                        showToast(`Processing ${file.name}...`, false, 'info');
+                        
+                        // Get file type category
+                        const fileType = getFileTypeCategory(ext);
+                        
+                        // Generate analysis prompt based on file type
+                        switch(fileType) {
+                            case 'image':
+                                // For images, we can't extract text, so we'll provide file info
+                                const img = new Image();
+                                img.src = URL.createObjectURL(file);
+                                await new Promise(resolve => {
+                                    img.onload = () => {
+                                        fileInfo = `Image: ${file.name}\nDimensions: ${img.width}x${img.height}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                        resolve();
+                                    };
+                                    img.onerror = () => {
+                                        fileInfo = `Image: ${file.name}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                        resolve();
+                                    };
+                                });
+                                displayContent = `🖼️ Imported image: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- Image Information ---\n${fileInfo}`;
+                                analysisPrompt = `I have uploaded an image file. Please analyze what information you can provide about this image:\n\n${fileInfo}\n\nWhat can you tell me about this image file? If you could see the image, what kind of analysis would you provide?`;
+                                break;
+                                
+                            case 'document':
+                                // For documents, we need server-side processing or OCR
+                                fileInfo = `Document: ${file.name}\nType: ${ext.toUpperCase()}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                displayContent = `📄 Imported document: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- Document Information ---\n${fileInfo}`;
+                                analysisPrompt = `I have uploaded a ${ext.toUpperCase()} document file. Since I can't extract text from this format in the browser, please tell me:\n1. What kind of content would typically be in a ${ext} file?\n2. How would you suggest analyzing such a file?\n3. What information might this document contain based on its type?`;
+                                break;
+                                
+                            case 'archive':
+                                fileInfo = `Archive: ${file.name}\nType: ${ext.toUpperCase()}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                displayContent = `📦 Imported archive: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- Archive Information ---\n${fileInfo}`;
+                                analysisPrompt = `I have uploaded a ${ext.toUpperCase()} archive file. This appears to be a compressed file format. Please explain:\n1. What is a ${ext} file typically used for?\n2. What kind of contents might be inside this archive?\n3. How would you approach analyzing the contents if it could be extracted?`;
+                                break;
+                                
+                            case 'code':
+                                // For code files, try to read text content
+                                try {
+                                    const text = await file.text();
+                                    const truncatedText = text.length > 5000 ? text.substring(0, 5000) + '...' : text;
+                                    fileInfo = `Code file: ${file.name}\nLanguage: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB\nLines: ${text.split('\n').length}`;
+                                    displayContent = `💻 Imported code file: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- Code Preview ---\n\`\`\`${ext}\n${truncatedText}\n\`\`\``;
+                                    analysisPrompt = `Analyze the following code file and provide insights:\n\nFile: ${file.name}\nLanguage: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB\n\nCode content:\n${text.substring(0, 15000)}${text.length > 15000 ? '... (truncated)' : ''}\n\nPlease analyze this code, identify potential issues, suggest improvements, and explain what this code does.`;
+                                } catch (err) {
+                                    fileInfo = `Code file: ${file.name}\nType: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                    displayContent = `💻 Imported code file: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- File Information ---\n${fileInfo}`;
+                                    analysisPrompt = `I have uploaded a ${ext} code file. Please explain what this file type is typically used for and how you would analyze code in this language.`;
+                                }
+                                break;
+                                
+                            case 'pdf':
+                                // PDF handling
+                                try {
+                                    const arrayBuffer = await file.arrayBuffer();
+                                    const pdf = await window['pdfjsLib'].getDocument({ data: arrayBuffer }).promise;
+                                    let fullText = '';
+                                    for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+                                        const page = await pdf.getPage(i);
+                                        const txtContent = await page.getTextContent();
+                                        const pageText = txtContent.items.map(it => it.str).join(' ');
+                                        fullText += pageText + '\n\n';
+                                    }
+                                    const text = fullText.trim();
+                                    if (text) {
+                                        const truncatedText = text.length > 40000 ? text.substring(0, 40000) + '...' : text;
+                                        fileInfo = `PDF: ${file.name}\nPages: ${pdf.numPages}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                        displayContent = `📚 Imported PDF: **${file.name}** (${(file.size / 1024).toFixed(2)} KB, ${pdf.numPages} pages)\n\n--- PDF Content Preview ---\n${truncatedText.substring(0, 1000)}${truncatedText.length > 1000 ? '...' : ''}`;
+                                        analysisPrompt = `Analyze the following PDF document and provide a comprehensive summary with key points:\n\nFile: ${file.name}\nPages: ${pdf.numPages}\nSize: ${(file.size / 1024).toFixed(2)} KB\n\nContent:\n${truncatedText}\n\nPlease provide a detailed analysis, summary, and highlight important information from this document.`;
+                                    } else {
+                                        throw new Error('No text extracted');
+                                    }
+                                } catch (err) {
+                                    fileInfo = `PDF: ${file.name}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                    displayContent = `📚 Imported PDF: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- File Information ---\n${fileInfo}`;
+                                    analysisPrompt = `I have uploaded a PDF file. Please explain what kind of content PDF files typically contain and how you would analyze such a document.`;
+                                }
+                                break;
+                                
+                            default:
+                                // For text-based files
+                                try {
+                                    const text = await file.text();
+                                    const truncatedText = text.length > 40000 ? text.substring(0, 40000) + '...' : text;
+                                    fileInfo = `File: ${file.name}\nType: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                    displayContent = `📄 Imported ${ext} file: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- File Content Preview ---\n${truncatedText.substring(0, 500)}${truncatedText.length > 500 ? '...' : ''}`;
+                                    analysisPrompt = `Analyze the following ${ext} file and provide insights:\n\nFile: ${file.name}\nType: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB\n\nContent:\n${truncatedText}\n\nPlease analyze this file content and provide a summary with key information.`;
+                                } catch (err) {
+                                    fileInfo = `File: ${file.name}\nType: ${ext}\nSize: ${(file.size / 1024).toFixed(2)} KB`;
+                                    displayContent = `📄 Imported ${ext} file: **${file.name}** (${(file.size / 1024).toFixed(2)} KB)\n\n--- File Information ---\n${fileInfo}`;
+                                    analysisPrompt = `I have uploaded a ${ext} file. Please explain what this file type is typically used for and what kind of analysis would be appropriate for this format.`;
+                                }
+                        }
+
+                        // Add user message with file info
+                        const userMsg = { role: 'user', content: displayContent };
+                        const updatedMessages = [...messages, userMsg];
+                        setMessages(updatedMessages);
+                        
+                        // Save to history
+                        const currentChat = history.find(c => c.id === currentChatId);
+                        const firstUserMsg = (currentChat && currentChat.title !== 'New Chat') 
+                            ? currentChat.title 
+                            : `File: ${file.name}`;
+                        
+                        saveCurrentChatToHistory(updatedMessages, firstUserMsg);
+                        
+                        // Send analysis prompt
+                        await handleSend(analysisPrompt);
+
+                    } catch (error) {
+                        console.error('File import failed:', error);
+                        showToast(`Failed to process file: ${error.message}`, true, 'error');
+                    }
+                };
+
+                inputEl.click();
+            }, [messages, history, currentChatId, handleSend]);
+
+            // Helper function to categorize file types
+            const getFileTypeCategory = (ext) => {
+                const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
+                const docExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp'];
+                const archiveExts = ['zip', 'rar', 'tar', 'gz', '7z', 'bz2'];
+                const codeExts = ['js', 'jsx', 'ts', 'tsx', 'html', 'css', 'scss', 'py', 'java', 'cpp', 'c', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'sql', 'xml', 'json', 'yml', 'yaml', 'md'];
+                
+                if (imageExts.includes(ext)) return 'image';
+                if (docExts.includes(ext)) return 'document';
+                if (archiveExts.includes(ext)) return 'archive';
+                if (codeExts.includes(ext)) return 'code';
+                if (ext === 'pdf') return 'pdf';
+                return 'text';
+            };
+
+            // --- Import chat JSON function ---
+            const importChats = useCallback(() => {
+                const inputEl = document.createElement('input');
+                inputEl.type = 'file';
+                inputEl.accept = '.json';
+                inputEl.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if (Array.isArray(imported)) {
+                                setHistory(imported);
+                                if (imported.length > 0) {
+                                    setCurrentChatId(imported[0].id);
+                                    setMessages(imported[0].messages);
+                                }
+                                showToast(`Imported ${imported.length} chats`);
+                            } else {
+                                throw new Error('Invalid format');
+                            }
+                        } catch (err) {
+                            showToast('Failed to import: Invalid file format or structure', true, 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                inputEl.click();
+            }, []);
+
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+                if (e.key === 'Escape' && isLoading) {
+                    stopGeneration();
+                }
+            };
+
+            const buildChatTextForShare = () => {
+                if (!messages || messages.length === 0) return "Chat is empty.";
+                const parts = messages.map(m => {
+                    const who = m.role === 'user' ? 'You' : 'AI';
+                    // Strip markdown for clean text sharing
+                    const txt = (m.content || '').replace(/[#*_`]/g, '').trim();
+                    return `${who}: ${txt}`;
+                });
+                return parts.join('\n\n');
+            };
+
+            const shareCurrentChat = useCallback(async () => {
+                try {
+                    const chatText = buildChatTextForShare();
+                    const title = `AI Chat - ${new Date().toLocaleString()}`;
+
+                    if (navigator.share) {
+                        await navigator.share({
+                            title,
+                            text: chatText
+                        });
+                        showToast('Shared via system share sheet');
+                        return;
+                    }
+
+                    await navigator.clipboard.writeText(chatText);
+                    showToast('Chat copied to clipboard. Share manually.');
+
+                } catch (err) {
+                    console.error('Share failed', err);
+                    showToast('Share failed: clipboard access denied.', true, 'error');
+                }
+            }, [messages]);
+
+            const handleImportAction = useCallback(() => {
+                // Modified condition: Always import file for analysis, no confirmation needed
+                importFileAndAnalyze();
+            }, [importFileAndAnalyze]);
+
+            return (
+                <>
+                    <SettingsModal 
+                        isOpen={showSettings}
+                        onClose={() => setShowSettings(false)}
+                        settings={settings}
+                        onSettingsChange={setSettings}
+                    />
+                    
+                    <Sidebar 
+                        history={history}
+                        activeChatId={currentChatId}
+                        onSelectChat={loadChat}
+                        onNewChat={startNewChat}
+                        onDeleteChat={deleteChat}
+                        onClearAllChats={clearAllChats}
+                        onRenameChat={renameChat}
+                        isOpen={isSidebarOpen}
+                        toggleSidebar={toggleSidebar}
+                        onShareChats={shareCurrentChat}
+                        onImportChats={handleImportAction}
+                        isCollapsed={isCollapsed}
+                        setCollapsed={setIsCollapsed}
+                    />
+
+                    <div className="main-chat">
+                        <div className="header">
+                            <div className="header-left">
+                                <button className="mobile-menu-btn" onClick={toggleSidebar}>
+                                    <i className="ph ph-list"></i>
+                                </button>
+                                <h3 style={{fontWeight:600, display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                    <i className="ph ph-lightning"></i> AI Chatbot
+                                    {isLoading && (
+                                        <span style={{fontSize: '0.7em', opacity: 0.7, fontWeight: 'normal'}}>
+                                            (Thinking...)
+                                        </span>
+                                    )}
+                                </h3>
+                            </div>
+                            
+                            <div className="header-actions">
+                                {isLoading && (
+                                    <button className="icon-btn stop-btn" onClick={stopGeneration} title="Stop generation">
+                                        <i className="ph ph-stop-circle"></i>
+                                    </button>
+                                )}
+                                <button className="icon-btn" onClick={() => setShowSettings(true)} title="Settings">
+                                    <i className="ph ph-gear"></i>
+                                </button>
+                                <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
+                                    {settings.theme === 'dark' || (settings.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 
+                                        <i className="ph ph-sun" style={{fontSize:'20px'}}></i> : 
+                                        <i className="ph ph-moon" style={{fontSize:'20px'}}></i>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="chat-container" ref={chatContainerRef}>
+                            {messages.length === 0 ? (
+                                <div style={{textAlign:'center', marginTop:'15vh', opacity:0.6, padding:'20px'}}>
+                                    <i className="ph ph-robot" style={{fontSize:'50px', marginBottom:'20px'}}></i>
+                                    <h2>How can I help you today?</h2>
+                                    <p style={{marginTop: '10px', opacity: 0.7}}>
+                                        Start by typing a message or click a suggestion below
+                                    </p>
+                                    <div style={{marginTop: '30px', display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center'}}>
+                                        <div className="suggestion-chip" onClick={() => handleSend("Write a creative story")}>
+                                            <i className="ph ph-pen-nib"></i> Creative writing
+                                        </div>
+                                        <div className="suggestion-chip" onClick={() => handleSend("Help me solve a problem")}>
+                                            <i className="ph ph-math-operations"></i> Problem solving
+                                        </div>
+                                        <div className="suggestion-chip" onClick={() => handleSend("Explain a complex topic")}>
+                                            <i className="ph ph-book-open"></i> Learning assistant
+                                        </div>
+                                        <div className="suggestion-chip" onClick={() => handleSend("Summarize this text for me")}>
+                                            <i className="ph ph-magnifying-glass"></i> Research help
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                messages.map((m, i) => (
+                                    <ChatMessage 
+                                        key={i} 
+                                        msg={m} 
+                                        onRegenerate={handleRegenerate}
+                                        onEdit={handleEditMessage}
+                                        settings={settings}
+                                    />
+                                ))
+                            )}
+                        </div>
+
+                        {/* CORRECTED INPUT AREA STRUCTURE (Mobile Fix) */}
+                        <div className="input-area">
+                            <div className="input-wrapper">
+                                <textarea 
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Message AI Chatbot..."
+                                    rows="1"
+                                    disabled={isLoading}
+                                ></textarea>
+                                <div className="input-actions">
+                                    <button 
+                                        className={`icon-btn ${isRecording ? 'recording' : ''}`} 
+                                        onClick={handleMic} 
+                                        title="Voice Input"
+                                        disabled={isLoading}
+                                    >
+                                        <i className="ph ph-microphone" style={{fontSize:'20px'}}></i>
+                                    </button>
+                                    <button 
+                                        className="icon-btn send-btn" 
+                                        onClick={() => handleSend()} 
+                                        disabled={!input.trim() || isLoading}
+                                        title={isLoading ? "Generating..." : "Send Message"}
+                                    >
+                                        {isLoading ? 
+                                            <i className="ph ph-spinner ph-spin" style={{fontSize:'20px'}}></i> : 
+                                            <i className="ph ph-paper-plane-right" style={{fontSize:'20px'}}></i>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {/* END CORRECTED INPUT AREA STRUCTURE */}
+                    </div>
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+
+    <script>
+        // --- THREE.JS BACKGROUND SCRIPT ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true,
+            powerPreference: "high-performance"
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById("container").appendChild(renderer.domElement);
+        camera.position.z = 15;
+
+        const bubbles = [];
+        const bubbleCount = 50;
+
+        const smallGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        const mediumGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const largeGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+
+        for (let i = 0; i < bubbleCount; i++) {
+            let geometry;
+            if (i < bubbleCount * 0.6) {
+                geometry = smallGeometry;
+            } else if (i < bubbleCount * 0.9) {
+                geometry = mediumGeometry;
+            } else {
+                geometry = largeGeometry;
+            }
+
+            const hue = Math.random() * 0.3 + 0.5;
+            const material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color().setHSL(hue, 0.7, 0.6),
+                transparent: true,
+                opacity: 0.15 + Math.random() * 0.1,
+                shininess: 100,
+                specular: new THREE.Color().setHSL(hue, 0.3, 0.9)
+            });
+
+            const bubble = new THREE.Mesh(geometry, material);
+            
+            bubble.position.set(
+                Math.random() * 60 - 30,
+                Math.random() * 40 - 20,
+                Math.random() * 40 - 20
+            );
+            
+            bubble.userData = {
+                speedY: Math.random() * 0.02 + 0.005,
+                speedX: (Math.random() - 0.5) * 0.005,
+                rotationSpeed: (Math.random() - 0.5) * 0.01,
+                floatOffset: Math.random() * Math.PI * 2
+            };
+
+            scene.add(bubble);
+            bubbles.push(bubble);
+        }
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 15);
+        scene.add(directionalLight);
+
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0x4a90e2, 0.3, 100);
+        pointLight.position.set(0, 0, 20);
+        scene.add(pointLight);
+
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            bubbles.forEach(bubble => {
+                bubble.position.y += bubble.userData.speedY;
+                bubble.position.x += Math.sin(time + bubble.userData.floatOffset) * bubble.userData.speedX;
+                bubble.rotation.x += bubble.userData.rotationSpeed * 0.5;
+                bubble.rotation.y += bubble.userData.rotationSpeed;
+                
+                if (bubble.position.y > 25) {
+                    bubble.position.y = -25;
+                    bubble.position.x = Math.random() * 60 - 30;
+                }
+                
+                bubble.material.opacity = 0.15 + 0.1 * Math.sin(time + bubble.userData.floatOffset);
+            });
+
+            camera.position.x = Math.sin(time * 0.05) * 2;
+            camera.position.y = Math.cos(time * 0.03) * 1;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const observer = new MutationObserver(() => {
+            const isLightMode = document.body.classList.contains('light-mode');
+            const baseHue = isLightMode ? 0.7 : 0.5;
+            
+            bubbles.forEach(bubble => {
+                const hue = baseHue + Math.random() * 0.2;
+                bubble.material.color.setHSL(hue, 0.7, isLightMode ? 0.7 : 0.6);
+            });
+        });
+
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    </script>
+</body>
+</html>
